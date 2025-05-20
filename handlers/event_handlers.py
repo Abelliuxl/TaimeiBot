@@ -3,11 +3,10 @@ from utils.logging_utils import get_logger
 from handlers.message_handlers import make_request
 from utils.voice_utils import join_voice_channel, stream_audio_to_voice, leave_voice_channel
 from config.config import BOT_TOKEN
-import asyncio
+from utils.voice_utils import get_audio_for_user
 
 
 logger = get_logger(__name__)
-TARGET_USER_ID = "847930929"
 
 # 配置发送消息的频道列表
 NOTIFICATION_CHANNEL_IDS = ["8099606056795106", "4932665341111852"]
@@ -18,32 +17,32 @@ async def handle_join_channel(event: Event, bot: Bot):
     
     channel = await bot.client.fetch_public_channel(event.body['channel_id'])
     user_id = event.body['user_id']
+    audio_path = get_audio_for_user(user_id)
 
     channel_id = event.body['channel_id']  # ✅ 添加这行
     
     logger.info(f"Channel fetched: {channel} channel_id: {event.body['channel_id']}")
     logger.info(f"User ID: {user_id}")
     
-    if user_id == TARGET_USER_ID:
+    if audio_path:
         try:
             voice_data = await join_voice_channel(channel_id, BOT_TOKEN)
-            logger.info(f"🎯 KOOK voice_data: {voice_data}")  # 打印 KOOK 推流地址信息
-            await asyncio.sleep(3)  # ✅ 等待 3 秒再推流
-            await stream_audio_to_voice(voice_data, "/home/liuxl/TaimeiBot-1.2/audio/5.AAC")
-            logger.info("已成功推送专属 welcome 音频")
-
-            # ✅ 播放完后自动离开语音频道
-            try:
-                await leave_voice_channel(channel_id, BOT_TOKEN)
-                logger.info("已自动离开语音频道")
-            except Exception as e:
-                logger.error(f"离开语音频道失败: {e}")
-
+            logger.info(f"🎯 KOOK voice_data: {voice_data}")
+            await stream_audio_to_voice(voice_data, audio_path)
+            logger.info(f"为用户 {user_id} 推送了语音：{audio_path}")
+            await leave_voice_channel(channel_id, BOT_TOKEN)
+            logger.info("已自动离开语音频道")
         except Exception as e:
             logger.error(f"语音推流失败: {e}")
+    else:
+        logger.info(f"用户 {user_id} 不在 MONITORED_MEMBERS 中，跳过推流")
 
     guild = await bot.client.fetch_guild(channel.guild_id)
     guild_channel_list = await guild.fetch_channel_list()
+
+    if user_id == "726976194":
+        logger.info("目标用户 726976194 加入语音频道，跳过发送公屏消息。")
+        return
     
     for guild_channel in guild_channel_list:
         if guild_channel.id in NOTIFICATION_CHANNEL_IDS:
@@ -66,6 +65,11 @@ async def handle_leave_channel(event: Event, bot: Bot):
     user_id = event.body['user_id']
     user = await bot.client.fetch_user(user_id)
     user_name = user.username
+
+    if user_id == "726976194":
+        logger.info("目标用户 726976194 离开语音频道，跳过发送公屏消息。")
+        return
+
     
     logger.info(f"User name: {user_name}")
     logger.info(f"User ID: {user_id}")
