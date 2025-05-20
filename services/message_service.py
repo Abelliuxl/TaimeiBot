@@ -58,32 +58,33 @@ async def send_direct_message(user_id: str, content: str, bot: Bot):
         logger.error(f"发送私信时发生错误: {str(e)}")
         raise 
 
-async def make_gpt_request(prompt: str) -> str:
-    """
-    调用GPT API生成回复
+
+# async def make_gpt_request(prompt: str) -> str:
+#     """
+#     调用GPT API生成回复
     
-    Args:
-        prompt: 提示文本
+#     Args:
+#         prompt: 提示文本
         
-    Returns:
-        str: GPT生成的回复
-    """
-    try:
-        # 从环境变量获取API密钥
-        openai.api_key = os.getenv('OPENAI_API_KEY')
+#     Returns:
+#         str: GPT生成的回复
+#     """
+#     try:
+#         # 从环境变量获取API密钥
+#         openai.api_key = os.getenv('OPENAI_API_KEY')
         
-        # 调用GPT API
-        response = await openai.ChatCompletion.acreate(
-            model="gpt-3.5-turbo",
-            messages=[
-                {"role": "user", "content": prompt}
-            ],
-            max_tokens=150,
-            temperature=0.8
-        )
+#         # 调用GPT API
+#         response = await openai.ChatCompletion.acreate(
+#             model="gpt-3.5-turbo",
+#             messages=[
+#                 {"role": "user", "content": prompt}
+#             ],
+#             max_tokens=150,
+#             temperature=0.8
+#         )
         
-        # 提取回复内容
-        return response.choices[0].message.content.strip()
-    except Exception as e:
-        logger.error(f"GPT API调用失败: {str(e)}")
-        return "抱歉，我现在有点累，待会再说吧~" 
+#         # 提取回复内容
+#         return response.choices[0].message.content.strip()
+#     except Exception as e:
+#         logger.error(f"GPT API调用失败: {str(e)}")
+#         return "抱歉，我现在有点累，待会再说吧~" 

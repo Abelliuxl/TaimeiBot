@@ -96,7 +96,7 @@ async def fetch_talent_loadouts(spec_simple):
         result_string += "**天赋代码**：{}\n\n".format(result["loadout_text"])
     
     # 在最后增加一条：详细数据访问url
-    detailed_url = f"https://raider.io/mythic-plus-spec-rankings/season-tww-1/world/{target_class}/{target_spec}"
+    detailed_url = f"https://raider.io/mythic-plus-spec-rankings/season-tww-2/world/{target_class}/{target_spec}"
     result_string += "详细数据访问Raider.io官网：{}\n".format(detailed_url)
     
     return result_string 
