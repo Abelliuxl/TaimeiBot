@@ -42,7 +42,7 @@ async def stream_audio_to_voice(data, audio_file_path="/home/liuxl/TaimeiBot-1.2
         "ffmpeg", "-y", "-i", audio_file_path,
         "-acodec", "libopus", "-ab", bitrate,
         "-ac", "2", "-ar", "48000",
-        "-filter:a", "volume=0.8",
+        "-filter:a", "volume=1",
         saved_output_path
     ]
     print("Saving to:", saved_output_path)
@@ -55,7 +55,7 @@ async def stream_audio_to_voice(data, audio_file_path="/home/liuxl/TaimeiBot-1.2
     "-map", "0:a:0",
     "-acodec", "libopus", "-ab", bitrate,
     "-ac", "2", "-ar", "48000",
-    "-filter:a", "volume=0.5",
+    "-filter:a", "volume=1.5",
     "-f", "tee",
     f"[select=a:f=rtp:ssrc={ssrc}:payload_type={pt}]{'rtp://'+ip+':'+str(port)+'?rtcpport='+str(rtcp_port) if not rtcp_mux else 'rtp://'+ip+':'+str(port)}"
     ]
