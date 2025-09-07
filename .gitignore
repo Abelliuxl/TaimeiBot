@@ -104,9 +104,130 @@ venv.bak/
 .vscode/
 *.swp
 *~
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
 
-# Config files
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Security and sensitive files
+# ========================================
+# Environment files (contain sensitive data)
+.env
+.env.local
+.env.*.local
+
+# Configuration files with sensitive data
 config/config.json
+config/encrypted_config.json
+config/secrets.json
 
-# Log files
-logs/*.log
+# Log files (may contain sensitive information)
+*.log
+logs/
+log/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.temp
+
+# Backup files
+*.bak
+*.backup
+*~
+
+# Security and encryption related
+*.key
+*.pem
+*.crt
+*.p12
+*.pfx
+keystore/
+truststore/
+
+# Database files (may contain sensitive data)
+*.db
+*.sqlite
+*.sqlite3
+
+# Cache files (may contain sensitive data)
+.cache/
+*.cache
+__pycache__/
+
+# Session data (may contain sensitive information)
+*.session
+sessions/
+
+# Token and API key files (sensitive)
+*token*
+*api_key*
+*secret*
+*credentials*
+
+# Config files (may contain sensitive data)
+config/local_config.json
+config/production_config.json
+config/development_config.json
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage directory used by tools like istanbul
+coverage/
+.nyc_output
+
+# Backup and temporary files
+*.backup
+*.swp
+*.swo
+*~
+
+# Project specific
+# ========================================
+# TaimeiBot specific files
+config/member_id_encrypted.txt
+raider_data/encrypted_player_info.json
+
+# Development and debugging
+.debug/
+debug/
+*.debug
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Deployment
+.dockerignore
+docker-compose.override.yml
+
+# Documentation builds
+docs/_build/
+site/
+
+# Package manager files
+package-lock.json
+yarn.lock
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ========================================
+# END OF .gitignore
+# Ensure sensitive files are never committed!

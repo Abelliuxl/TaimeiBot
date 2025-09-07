@@ -18,7 +18,7 @@ async def join_voice_channel(channel_id: str, token: str):
         response.raise_for_status()
         return response.json()["data"]
 
-async def stream_audio_to_voice(data, audio_file_path="/home/liuxl/TaimeiBot-1.2/audio/test.mp3"):
+async def stream_audio_to_voice(data, audio_file_path="/home/liuxl/TaimeiBot/audio/test.mp3"):
     ip = data["ip"]
     port = data["port"]
     rtcp_mux = data["rtcp_mux"]

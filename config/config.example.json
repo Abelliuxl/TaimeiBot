@@ -1,5 +1,20 @@
 {
-    "token": "your_bot_token_here",
-    "openai_api2d_url": "https://api.example.com/v1/chat/completions",
-    "openai_api2d_api_key": "your_api_key_here"
-} 
+  "bot_token": "your_khl_bot_token_here",
+  "verify_token": "your_webhook_verify_token_here",
+  "encrypt_key": "your_data_encryption_key_here",
+  "llm_api_url": "https://api.openai.com/v1/chat/completions",
+  "llm_api_key": "your_openai_api_key_here",
+  "llm_model": "gpt-4",
+  "bot_id": "726976194",
+  "translation_channels": [
+    "9446829885813673",
+    "4113108449843636"
+  ],
+  "admin_channels": [],
+  "webhook_port": 50000,
+  "using_ws": true,
+  "enable_translation": true,
+  "enable_talent_query": true,
+  "enable_ai_chat": true,
+  "enable_random_reply": true
+}

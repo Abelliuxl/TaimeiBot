@@ -49,7 +49,7 @@ async def handle_join_channel(event: Event, bot: Bot):
             content = "你是一个心胸狭窄的憨憨，人菜脾气大，有个比你厉害比你优秀比你帅的来游戏语音频道了，你很不服气，准备了一番话对他阴阳怪气（不超过150字），你说道："
             
             try:
-                response = make_request(content, bot.config)
+                response = await make_request(content, bot.config)
                 gpt_response = response['choices'][0]['message']['content']
                 respond_channel = await bot.client.fetch_public_channel(guild_channel.id)
                 await bot.client.send(respond_channel, f'(met){user_id}(met){gpt_response}')
@@ -82,7 +82,7 @@ async def handle_leave_channel(event: Event, bot: Bot):
             content = f"你是一个心胸狭窄的憨憨，人菜脾气大，有个比你厉害比你优秀比你帅的人，叫{user_name},打完游戏离开游戏语音频道了，你看他走了你来劲了，准备了一番话在公屏上阴阳怪气,并调侃他的名字（不超过150字），你说道："
             
             try:
-                response = make_request(content, bot.config)
+                response = await make_request(content, bot.config)
                 gpt_response = response['choices'][0]['message']['content']
                 respond_channel = await bot.client.fetch_public_channel(guild_channel.id)
                 await bot.client.send(respond_channel, f'\n\n{gpt_response}')
