@@ -1,6 +1,6 @@
-# TaimeiBot
+# TaimeiBot Pro
 
-TaimeiBot 是一个基于 [khl.py](https://github.com/TWT233/khl.py) 开发的开黑啦机器人，专注于魔兽世界游戏相关功能，提供天赋查询、翻译、AI对话等功能。
+TaimeiBot Pro 是一个基于 [khl.py](https://github.com/TWT233/khl.py) 开发的专业版开黑啦机器人，专注于魔兽世界游戏相关功能，提供天赋查询、翻译、AI对话等功能，并配备了强大的进程管理系统。
 
 ## 功能特性
 
@@ -25,12 +25,19 @@ TaimeiBot 是一个基于 [khl.py](https://github.com/TWT233/khl.py) 开发的�
 - `/dm` 发送私信给指定用户
 - 支持@机器人进行对话
 
+### 5. 专业进程管理系统 (v1.5新增)
+- 基于supervisord的进程管理，确保7x24小时稳定运行
+- 通用supervisord命令别名系统，可管理任何服务
+- 自动重启机制，崩溃后自动恢复
+- 完善的日志管理和监控工具
+- 简化的运维命令，大幅提升管理效率
+
 ## 安装说明
 
 1. 克隆项目并安装依赖：
 ```bash
 git clone https://github.com/yourusername/TaimeiBot.git
-cd TaimeiBot-1.1
+cd TaimeiBot-1.5
 pip install -r requirements.txt
 ```
 
@@ -64,7 +71,7 @@ pip install -r requirements.txt
 ## 项目结构
 
 ```
-TaimeiBot-1.1/
+TaimeiBot-1.5/
 ├── config/                 # 配置文件目录
 │   ├── Abbreviations.json # 职业专精别名配置
 │   ├── config.json        # 主配置文件
@@ -82,12 +89,40 @@ TaimeiBot-1.1/
 
 ## 使用说明
 
-1. 启动机器人：
+### 方式一：直接启动
 ```bash
 python main.py
 ```
 
-2. 可用命令：
+### 方式二：使用进程管理系统 (推荐)
+
+1. 加载管理命令：
+```bash
+source supervisor_aliases.sh
+```
+
+2. 启动supervisord：
+```bash
+supdaemon_start
+```
+
+3. 管理机器人：
+```bash
+sup_status taimeibot        # 查看状态
+sup_start taimeibot         # 启动机器人
+sup_restart taimeibot       # 重启机器人
+sup_logf taimeibot          # 实时查看日志
+sup_debug taimeibot         # 调试信息
+```
+
+4. 批量操作：
+```bash
+sup_all                    # 查看所有服务状态
+sup_restart_all            # 重启所有服务
+```
+
+## 机器人命令
+
 - `/help` - 显示帮助信息
 - `/ping` - 测试机器人是否在线
 - `/tf <职业专精>` - 查询天赋加点
@@ -150,7 +185,7 @@ git checkout main
 git merge develop
 
 # 创建版本标签
-git tag -a v1.1.x -m "版本描述"
+git tag -a v1.5.x -m "版本描述"
 
 # 推送到远程仓库
 git push origin main --tags
@@ -160,4 +195,4 @@ git push origin main --tags
 
 - 所有敏感配置信息（如 token、API密钥等）都存放在 `config/config.json` 中
 - 首次设置时，复制 `config/config.example.json` 为 `config/config.json` 并填入实际配置
-- `config.json` 已添加到 `.gitignore`，不会被提交到版本库 
+- `config.json` 已添加到 `.gitignore`，不会被提交到版本库
