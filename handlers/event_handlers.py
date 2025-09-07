@@ -1,6 +1,6 @@
 from khl import Bot, Event, EventTypes
 from utils.logging_utils import get_logger
-from handlers.message_handlers import make_request
+from services.llm_service import make_request
 from utils.voice_utils import join_voice_channel, stream_audio_to_voice, leave_voice_channel
 from config.config import BOT_TOKEN
 from utils.voice_utils import get_audio_for_user
@@ -89,3 +89,20 @@ async def handle_leave_channel(event: Event, bot: Bot):
                 logger.info(f"Message sent to channel {guild_channel.id}")
             except Exception as e:
                 logger.error(f"Error sending message: {str(e)}") 
+
+def register_event_handlers(bot: Bot):
+    @bot.on_event(EventTypes.JOINED_CHANNEL)
+    async def join_handler(bot_: Bot, event):
+        try:
+            logger.info("收到加入语音频道事件")
+            await handle_join_channel(event, bot)
+        except Exception as e:
+            logger.error(f"处理加入语音频道事件时发生错误: {str(e)}")
+    
+    @bot.on_event(EventTypes.EXITED_CHANNEL)
+    async def leave_handler(bot_: Bot, event):
+        try:
+            logger.info("收到退出语音频道事件")
+            await handle_leave_channel(event, bot)
+        except Exception as e:
+            logger.error(f"处理退出语音频道事件时发生错误: {str(e)}")
