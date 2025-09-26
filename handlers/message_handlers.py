@@ -186,11 +186,12 @@ class MessageHandler:
     async def _handle_special_command(self, msg: Message, command_name: str, args: list, bot: Bot):
         """处理特殊命令（不在命令系统中的命令）"""
         try:
-            if command_name == "ping":
+            command_lower = command_name.lower()
+            if command_lower == "ping":
                 await msg.reply("pong!")
                 logger.info("响应ping命令")
             
-            elif command_name == "send" and len(args) >= 2:
+            elif command_lower == "send" and len(args) >= 2:
                 # 发送消息到指定频道
                 channel_id = args[0]
                 content = " ".join(args[1:])
@@ -198,7 +199,7 @@ class MessageHandler:
                 await msg.reply(f"消息已发送到频道 {channel_id}")
                 logger.info(f"发送消息到频道 {channel_id}")
             
-            elif command_name == "dm" and len(args) >= 2:
+            elif command_lower == "dm" and len(args) >= 2:
                 # 发送私信给指定用户
                 user_id = args[0]
                 content = " ".join(args[1:])

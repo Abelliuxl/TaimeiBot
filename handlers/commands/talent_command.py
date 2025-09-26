@@ -45,7 +45,7 @@ class TalentCommand(BaseCommand):
     
     async def execute(self, message: Message, args: List[str]) -> Optional[str]:
         """执行天赋查询命令"""
-        spec_simple = args[0].strip()
+        spec_simple = args[0].strip().lower()
         
         # 检查功能开关
         if not self.config.get('enable_talent_query', True):

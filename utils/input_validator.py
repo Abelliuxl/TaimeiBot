@@ -263,10 +263,10 @@ def create_command_validator() -> InputValidator:
         # 检查是否为已知的命令
         command_parts = value[1:].split()
         if command_parts:
-            command = command_parts[0]
+            command = command_parts[0].lower()
             known_commands = ['tf', 'tr', 'ai', 'help']
             if command not in known_commands:
-                return ValidationResult(False, f"未知命令: {command}")
+                return ValidationResult(False, f"未知命令: {command_parts[0]}")
         
         return ValidationResult(True)
     
