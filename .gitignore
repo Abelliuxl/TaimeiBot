@@ -203,6 +203,9 @@ coverage/
 config/member_id_encrypted.txt
 raider_data/encrypted_player_info.json
 
+# Runtime generated audio files (transcoded opus files)
+audio/*_transcoded.opus
+
 # Development and debugging
 .debug/
 debug/
