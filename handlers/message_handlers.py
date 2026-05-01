@@ -9,7 +9,6 @@ from utils.error_handler import APIError, NetworkError, ValidationError, RateLim
 from services import message_service
 from services.llm_service import make_request
 from services.agent_service import AgentService
-from utils.card_helper import reply_with_card
 from handlers.commands import (
     BaseCommand, CommandRegistry, TalentCommand, 
     HelpCommand  # AIChatCommand and TranslationCommand removed
@@ -285,20 +284,17 @@ class MessageHandler:
 
             reply = await agent.run(content)
 
-            try:
-                await msg.delete_reaction("⏳", bot.me)
-            except Exception:
-                pass
-
-            await reply_with_card(msg, reply)
+            from utils.text_format import sanitize_kook_text
+            await msg.reply(sanitize_kook_text(f"🤖 太美:\n{reply}"))
 
         except Exception as e:
             log_error(logger, e, {'function': '_handle_agent_chat'})
+            await self._send_error_reply(msg, "抱歉，处理请求时出现了错误。")
+        finally:
             try:
                 await msg.delete_reaction("⏳", bot.me)
             except Exception:
                 pass
-            await self._send_error_reply(msg, "抱歉，处理请求时出现了错误。")
 
     async def _handle_random_reply(self, msg: Message, bot: Bot):
         """处理随机回复"""
