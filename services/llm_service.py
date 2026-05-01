@@ -42,16 +42,15 @@ class LLMService:
         else:
             data['max_tokens'] = self.default_max_tokens
 
-        thinking = kwargs.get('thinking')
-        if thinking is not False:
-            if thinking is None or thinking is True:
-                data['thinking'] = {"type": "enabled"}
-                if isinstance(self.default_thinking, dict) and self.default_thinking.get('reasoning_effort'):
-                    data['thinking']['reasoning_effort'] = self.default_thinking['reasoning_effort']
-            elif isinstance(thinking, dict):
-                data['thinking'] = thinking
-            if data.get('thinking', {}).get('reasoning_effort') == 'max':
+        if 'thinking' in kwargs:
+            t = kwargs['thinking']
+            if t is True:
+                data['thinking'] = {"type": "enabled", "reasoning_effort": "max"}
                 data['max_tokens'] = max(data.get('max_tokens', 65536), 128000)
+            elif isinstance(t, dict):
+                data['thinking'] = t
+                if t.get('reasoning_effort') == 'max':
+                    data['max_tokens'] = max(data.get('max_tokens', 65536), 128000)
 
         if 'tools' in kwargs and kwargs['tools']:
             data['tools'] = kwargs['tools']

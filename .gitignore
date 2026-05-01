@@ -231,6 +231,9 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
+# Agent memory (auto-generated, contains conversation data)
+/memory/
+
 # ========================================
 # END OF .gitignore
 # Ensure sensitive files are never committed!

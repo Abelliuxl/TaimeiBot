@@ -5,10 +5,7 @@ from utils.logging_utils import get_logger
 
 logger = get_logger(__name__)
 
-ALLOWED_PATHS: List[str] = [
-    "/home/liuxl/TaimeiBot/config/",
-    "/home/liuxl/raider_data/",
-]
+ALLOWED_PATHS: List[str] = []
 
 ALLOWED_FILE_PATTERNS: List[str] = [
     ".json",
@@ -26,7 +23,7 @@ class FileReaderTool(BaseTool):
 
     @property
     def description(self) -> str:
-        return "读取本地文件内容。可以读取配置文件(config/)和数据文件(raider_data/)。支持json/txt/py/toml格式。"
+        return "读取本地文件内容。目前无可访问目录，需管理员配置后可读取json/txt/py/toml格式文件。"
 
     @property
     def parameters(self) -> Dict[str, Any]:

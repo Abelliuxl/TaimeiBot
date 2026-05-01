@@ -6,6 +6,7 @@ from handlers.event_handlers import register_event_handlers
 from handlers.bot_handlers import register_bot_handlers
 from utils.logging_utils import get_logger
 from services.container import initialize_services, get_container
+from services.heartbeat_service import HeartbeatService
 from config.config import initialize_config
 
 logger = get_logger(__name__)
@@ -39,6 +40,12 @@ async def initialize_application():
         register_bot_handlers(bot)
         register_message_handlers(bot)
         register_event_handlers(bot)
+        
+        # 启动记忆心跳
+        llm_service = container.get('llm_service')
+        heartbeat = HeartbeatService(llm_service)
+        heartbeat.start()
+        bot.heartbeat = heartbeat
         
         logger.info("所有处理器注册完成")
         

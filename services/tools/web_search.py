@@ -1,9 +1,14 @@
 import aiohttp
-from typing import Dict, Any
+import os
+from typing import Dict, Any, Optional
 from .base import BaseTool, ToolResult
 from utils.logging_utils import get_logger
 
 logger = get_logger(__name__)
+
+
+def _get_proxy() -> Optional[str]:
+    return os.environ.get("https_proxy") or os.environ.get("http_proxy") or None
 
 
 class WebSearchTool(BaseTool):
@@ -49,8 +54,9 @@ class WebSearchTool(BaseTool):
             "no_html": 1,
             "skip_disambig": 1,
         }
+        proxy = _get_proxy()
         async with aiohttp.ClientSession() as session:
-            async with session.get(url, params=params, timeout=aiohttp.ClientTimeout(total=15)) as resp:
+            async with session.get(url, params=params, proxy=proxy, timeout=aiohttp.ClientTimeout(total=15)) as resp:
                 if resp.status != 200:
                     raise Exception(f"DuckDuckGo returned {resp.status}")
                 data = await resp.json()

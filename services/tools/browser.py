@@ -1,9 +1,14 @@
 import asyncio
-from typing import Dict, Any
+import os
+from typing import Dict, Any, Optional
 from .base import BaseTool, ToolResult
 from utils.logging_utils import get_logger
 
 logger = get_logger(__name__)
+
+
+def _get_proxy() -> Optional[str]:
+    return os.environ.get("https_proxy") or os.environ.get("http_proxy") or None
 
 
 class BrowseWebpageTool(BaseTool):
@@ -46,8 +51,13 @@ class BrowseWebpageTool(BaseTool):
     async def _browse(self, url: str, timeout_ms: int = 30000) -> str:
         from playwright.async_api import async_playwright
 
+        proxy = _get_proxy()
+        launch_kwargs = {"headless": True}
+        if proxy:
+            launch_kwargs["proxy"] = {"server": proxy}
+
         async with async_playwright() as p:
-            browser = await p.chromium.launch(headless=True)
+            browser = await p.chromium.launch(**launch_kwargs)
             context = await browser.new_context(
                 user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36",
                 viewport={"width": 1920, "height": 1080},
