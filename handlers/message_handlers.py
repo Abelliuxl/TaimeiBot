@@ -9,6 +9,7 @@ from utils.error_handler import APIError, NetworkError, ValidationError, RateLim
 from services import message_service
 from services.llm_service import make_request
 from services.agent_service import AgentService
+from utils.card_helper import reply_with_card
 from handlers.commands import (
     BaseCommand, CommandRegistry, TalentCommand, 
     HelpCommand  # AIChatCommand and TranslationCommand removed
@@ -289,7 +290,7 @@ class MessageHandler:
             except Exception:
                 pass
 
-            await msg.reply(f"🤖 太美:\n{reply}")
+            await reply_with_card(msg, reply)
 
         except Exception as e:
             log_error(logger, e, {'function': '_handle_agent_chat'})
