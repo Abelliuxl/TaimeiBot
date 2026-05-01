@@ -5,12 +5,13 @@ from .file_reader import FileReaderTool
 from .memory import ReadMemoryTool, UpdateMemoryTool
 from .tavily_search import TavilySearchTool
 from .brave_search import BraveSearchTool
+from .talent_lookup import TalentLookupTool
 from .skill import ListSkillsTool, LoadSkillTool, WriteSkillTool, DeleteSkillTool
 
 __all__ = [
     'BaseTool', 'ToolResult',
     'BrowseWebpageTool', 'FetchURLTool', 'FileReaderTool',
     'ReadMemoryTool', 'UpdateMemoryTool',
-    'TavilySearchTool', 'BraveSearchTool',
+    'TavilySearchTool', 'BraveSearchTool', 'TalentLookupTool',
     'ListSkillsTool', 'LoadSkillTool', 'WriteSkillTool', 'DeleteSkillTool',
 ]

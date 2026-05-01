@@ -6,6 +6,7 @@ from services.tools import (
     BaseTool, BrowseWebpageTool, FetchURLTool, FileReaderTool,
     ReadMemoryTool, UpdateMemoryTool, TavilySearchTool, BraveSearchTool,
     ListSkillsTool, LoadSkillTool, WriteSkillTool, DeleteSkillTool,
+    TalentLookupTool,
 )
 from utils.logging_utils import get_logger
 from utils.error_handler import log_error
@@ -26,6 +27,7 @@ AGENT_SYSTEM_PROMPT = """你是一个智能 AI 助手，名叫"太美"。你可�
 - **brave_search**: 使用 Brave 搜索引擎（适合快速搜索、来源多样）
 - **browse_webpage**: 用浏览器打开网页（支持JS渲染）
 - **fetch_url**: 直接HTTP获取URL内容
+- **talent_lookup**: 查询魔兽世界天赋配置（从 raider.io 获取前列玩家天赋代码）
 - **read_local_file**: 读取本地文件
 - **read_memory**: 读取我的长期记忆
 - **update_memory**: 写入/更新长期记忆（重要信息请主动记住）
@@ -62,6 +64,7 @@ class AgentService:
             ReadMemoryTool(), UpdateMemoryTool(),
             TavilySearchTool(), BraveSearchTool(),
             ListSkillsTool(), LoadSkillTool(), WriteSkillTool(), DeleteSkillTool(),
+            TalentLookupTool(),
         ]:
             self.tools[tool.name] = tool
 
