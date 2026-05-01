@@ -6,7 +6,8 @@
   },
   "demon-hunter": {
     "havoc": ["dh", "浩劫", "浩劫dh"], 
-    "vengeance": ["dht", "复仇"]
+    "vengeance": ["dht", "复仇"],
+    "devourer": ["噬灭"]
   },
   "druid": {
     "balance": ["鸟德", "鸡", "咕咕", "鹌鹑","gg"],

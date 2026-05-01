@@ -160,7 +160,7 @@ class MessageHandler:
             
             # 分割命令和参数
             parts = command_text.split(maxsplit=1)
-            command_name = parts[0]
+            command_name = parts[0].lower()
             args = parts[1].split() if len(parts) > 1 else []
             
             logger.info(f"处理命令: {command_name}, 参数: {args}")
