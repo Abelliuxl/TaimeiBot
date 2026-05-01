@@ -237,3 +237,6 @@ yarn-error.log*
 # ========================================
 # END OF .gitignore
 # Ensure sensitive files are never committed!
+
+# IDE / Editor specific
+.claude/
