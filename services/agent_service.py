@@ -3,8 +3,8 @@ import json
 from services.llm_service import LLMService
 from services.memory import MemoryStore
 from services.tools import (
-    BaseTool, WebSearchTool, BrowseWebpageTool, FetchURLTool, FileReaderTool,
-    ReadMemoryTool, UpdateMemoryTool,
+    BaseTool, BrowseWebpageTool, FetchURLTool, FileReaderTool,
+    ReadMemoryTool, UpdateMemoryTool, TavilySearchTool, BraveSearchTool,
 )
 from utils.logging_utils import get_logger
 from utils.error_handler import log_error
@@ -21,7 +21,8 @@ AGENT_SYSTEM_PROMPT = """你是一个智能 AI 助手，名叫"太美"。你可�
 5. 汇总所有信息，给出完整、清晰的回答
 
 ## 可用工具
-- **web_search**: 搜索互联网获取信息
+- **tavily_search**: 使用 Tavily 搜索引擎（适合深度搜索、准确性高）
+- **brave_search**: 使用 Brave 搜索引擎（适合快速搜索、来源多样）
 - **browse_webpage**: 用浏览器打开网页（支持JS渲染）
 - **fetch_url**: 直接HTTP获取URL内容
 - **read_local_file**: 读取本地文件
@@ -45,8 +46,9 @@ class AgentService:
 
     def _register_tools(self):
         for tool in [
-            WebSearchTool(), BrowseWebpageTool(), FetchURLTool(), FileReaderTool(),
+            BrowseWebpageTool(), FetchURLTool(), FileReaderTool(),
             ReadMemoryTool(), UpdateMemoryTool(),
+            TavilySearchTool(), BraveSearchTool(),
         ]:
             self.tools[tool.name] = tool
 
