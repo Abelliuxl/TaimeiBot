@@ -79,6 +79,8 @@ class AgentService:
             assistant_msg = {"role": "assistant", "content": msg.get('content') or ""}
             if msg.get('tool_calls'):
                 assistant_msg["tool_calls"] = msg['tool_calls']
+            if msg.get('reasoning_content'):
+                assistant_msg["reasoning_content"] = msg["reasoning_content"]
             messages.append(assistant_msg)
 
             if finish == 'stop' or not msg.get('tool_calls'):
