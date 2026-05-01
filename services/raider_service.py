@@ -72,7 +72,7 @@ class RaiderService:
             
             if not os.path.exists(season_config_path):
                 logger.warning(f"赛季配置文件不存在: {season_config_path}")
-                return "season-tww-3"
+                return "season-mn-1"
             
             with open(season_config_path, 'r', encoding='utf-8') as f:
                 season_config = json.load(f)
@@ -81,14 +81,14 @@ class RaiderService:
             
             if not current_season:
                 logger.warning("赛季配置文件中未找到赛季信息")
-                return "season-tww-3"
+                return "season-mn-1"
             
             logger.info(f"从本地配置文件读取到当前赛季: {current_season}")
             return current_season
             
         except Exception as e:
             logger.warning(f"读取赛季配置文件失败: {str(e)}")
-            return "season-tww-3"
+            return "season-mn-1"
     
     @raider_cache(ttl=1800, key_prefix="talent_loadouts")
     async def fetch_talent_loadouts(self, spec_simple: str) -> Optional[str]:
@@ -209,7 +209,7 @@ class RaiderService:
         except Exception as e:
             logger.warning(f"获取当前赛季失败，使用默认赛季: {str(e)}")
             # 使用默认赛季作为回退
-            current_season = "season-tww-3"  # 根据您提到的，当前应该是 season-tww-3
+            current_season = "season-mn-1"  # 根据您提到的，当前应该是 season-mn-1
             detailed_url = f"https://raider.io/mythic-plus-spec-rankings/{current_season}/world/{target_class}/{target_spec}"
         
         result_string += "详细数据访问Raider.io官网：{}\n".format(detailed_url)
