@@ -1,15 +1,11 @@
 import aiohttp
-import os
 import json
-from typing import Dict, Any, Optional
+from typing import Dict, Any
 from .base import BaseTool, ToolResult
+from .proxy import get_proxy
 from utils.logging_utils import get_logger
 
 logger = get_logger(__name__)
-
-
-def _get_proxy() -> Optional[str]:
-    return os.environ.get("https_proxy") or os.environ.get("http_proxy") or None
 
 
 class FetchURLTool(BaseTool):
@@ -53,7 +49,7 @@ class FetchURLTool(BaseTool):
         headers = {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
         }
-        proxy = _get_proxy()
+        proxy = get_proxy()
         async with aiohttp.ClientSession() as session:
             async with session.get(url, headers=headers, proxy=proxy,
                                    timeout=aiohttp.ClientTimeout(total=timeout)) as resp:

@@ -276,16 +276,27 @@ class MessageHandler:
 
             logger.info(f"用户 {msg.author_id} Agent请求: {content}")
 
+            await msg.add_reaction("⏳")
+
             from services.container import get_container
             container = get_container()
             agent = AgentService(container.get('llm_service'))
 
             reply = await agent.run(content)
 
+            try:
+                await msg.delete_reaction("⏳", bot.me)
+            except Exception:
+                pass
+
             await msg.reply(f"🤖 太美:\n{reply}")
 
         except Exception as e:
             log_error(logger, e, {'function': '_handle_agent_chat'})
+            try:
+                await msg.delete_reaction("⏳", bot.me)
+            except Exception:
+                pass
             await self._send_error_reply(msg, "抱歉，处理请求时出现了错误。")
 
     async def _handle_random_reply(self, msg: Message, bot: Bot):
