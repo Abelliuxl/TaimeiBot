@@ -11,7 +11,7 @@ from typing import Any, Dict, Optional, Union, Callable, Awaitable
 from collections import defaultdict
 from utils.logging_utils import get_logger
 from utils.error_handler import CacheError, log_error
-from config.constants import DEFAULT_CACHE_TTL, DEFAULT_RAIDER_CACHE_TTL, DEFAULT_TRANSLATION_CACHE_TTL
+from config.constants import DEFAULT_CACHE_TTL, DEFAULT_RAIDER_CACHE_TTL
 
 logger = get_logger(__name__)
 
@@ -289,7 +289,7 @@ class TranslationCacheManager(CacheManager):
     """翻译缓存管理器"""
     
     def __init__(self):
-        super().__init__(default_ttl=DEFAULT_TRANSLATION_CACHE_TTL, max_size=1000)
+        super().__init__(default_ttl=86400, max_size=1000)
         logger.info("翻译缓存管理器初始化完成")
 
 # 全局缓存管理器实例
