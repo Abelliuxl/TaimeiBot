@@ -128,7 +128,6 @@ class ConfigRepository(BaseRepository):
         """获取频道相关配置"""
         config = self.get_config()
         return {
-            'translation_channels': config.get('translation_channels', []),
             'admin_channels': config.get('admin_channels', [])
         }
     
@@ -136,7 +135,6 @@ class ConfigRepository(BaseRepository):
         """获取功能开关配置"""
         config = self.get_config()
         return {
-            'enable_translation': config.get('enable_translation', True),
             'enable_talent_query': config.get('enable_talent_query', True),
             'enable_ai_chat': config.get('enable_ai_chat', True),
             'enable_random_reply': config.get('enable_random_reply', True)

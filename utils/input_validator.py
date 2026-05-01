@@ -264,7 +264,7 @@ def create_command_validator() -> InputValidator:
         command_parts = value[1:].split()
         if command_parts:
             command = command_parts[0].lower()
-            known_commands = ['tf', 'tr', 'ai', 'help', 'ping', 'send', 'dm']
+            known_commands = ['tf', 'ai', 'help', 'ping', 'send', 'dm']
             if command not in known_commands:
                 return ValidationResult(False, f"未知命令: {command_parts[0]}")
         
@@ -308,22 +308,6 @@ def create_talent_query_validator() -> InputValidator:
     
     return validator
 
-def create_translation_validator() -> InputValidator:
-    """创建翻译验证器"""
-    validator = InputValidator()
-    
-    # 验证翻译内容
-    validator.add_rule('text', ValidationRule.REQUIRED, None, "翻译内容不能为空")
-    validator.add_rule('text', ValidationRule.MIN_LENGTH, 1, "翻译内容不能为空")
-    validator.add_rule('text', ValidationRule.MAX_LENGTH, 5000, "翻译内容过长")
-    
-    # 验证目标语言（可选）
-    supported_languages = ['en', 'zh', 'ja', 'ko']
-    validator.add_rule('target_lang', ValidationRule.IN_LIST, supported_languages, 
-                      f"不支持的语言，支持的语言: {', '.join(supported_languages)}")
-    
-    return validator
-
 def create_ai_chat_validator() -> InputValidator:
     """创建AI聊天验证器"""
     validator = InputValidator()
@@ -361,7 +345,6 @@ def create_user_input_validator() -> InputValidator:
 # 全局验证器实例
 _command_validator: Optional[InputValidator] = None
 _talent_query_validator: Optional[InputValidator] = None
-_translation_validator: Optional[InputValidator] = None
 _ai_chat_validator: Optional[InputValidator] = None
 _user_input_validator: Optional[InputValidator] = None
 
@@ -378,13 +361,6 @@ def get_talent_query_validator() -> InputValidator:
     if _talent_query_validator is None:
         _talent_query_validator = create_talent_query_validator()
     return _talent_query_validator
-
-def get_translation_validator() -> InputValidator:
-    """获取翻译验证器"""
-    global _translation_validator
-    if _translation_validator is None:
-        _translation_validator = create_translation_validator()
-    return _translation_validator
 
 def get_ai_chat_validator() -> InputValidator:
     """获取AI聊天验证器"""
@@ -417,19 +393,6 @@ async def validate_talent_query(spec: str, server: Optional[str] = None, region:
         data['region'] = region
     
     validator = get_talent_query_validator()
-    is_valid, errors = await validator.validate_async(data)
-    
-    # 返回第一个错误
-    error_msg = next(iter(errors.values()), '') if errors else ''
-    return is_valid, error_msg
-
-async def validate_translation(text: str, target_lang: Optional[str] = None) -> Tuple[bool, str]:
-    """验证翻译请求"""
-    data = {'text': text}
-    if target_lang:
-        data['target_lang'] = target_lang
-    
-    validator = get_translation_validator()
     is_valid, errors = await validator.validate_async(data)
     
     # 返回第一个错误

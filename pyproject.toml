@@ -1,0 +1,21 @@
+[project]
+name = "taimeibot"
+version = "1.0.0"
+description = "KTAimei Bot"
+requires-python = ">=3.11"
+dependencies = [
+    "khl.py>=0.3.16",
+    "aiohttp>=3.8.0",
+    "requests>=2.31.0",
+    "python-dotenv>=1.0.0",
+    "PyYAML>=6.0",
+    "httpx>=0.27.0",
+    "cryptography>=41.0.0",
+    "playwright>=1.59.0",
+]
+
+[project.scripts]
+taimeibot = "main:main_sync"
+
+[dependency-groups]
+dev = []

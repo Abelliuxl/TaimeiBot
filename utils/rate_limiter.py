@@ -419,13 +419,6 @@ def get_rate_limit_manager() -> RateLimitManager:
         )
         
         _rate_limit_manager.create_limiter(
-            "translation", 
-            RateLimiterType.LEAKY_BUCKET, 
-            20,  # 每分钟20个翻译请求
-            60
-        )
-        
-        _rate_limit_manager.create_limiter(
             "ai_chat", 
             RateLimiterType.TOKEN_BUCKET, 
             15,  # 每分钟15个AI聊天请求
@@ -452,10 +445,6 @@ async def check_talent_rate_limit(user_id: str) -> RateLimitInfo:
     manager = get_rate_limit_manager()
     return await manager.check_limit("talent", f"talent:{user_id}")
 
-async def check_translation_rate_limit(user_id: str) -> RateLimitInfo:
-    """检查翻译限流"""
-    manager = get_rate_limit_manager()
-    return await manager.check_limit("translation", f"translation:{user_id}")
 
 async def check_ai_chat_rate_limit(user_id: str) -> RateLimitInfo:
     """检查AI聊天限流"""

@@ -107,12 +107,6 @@ class HelpCommand(BaseCommand):
                 "/天赋 冰霜",
                 "/tx 恢复"
             ],
-            "tr": [
-                "/tr Hello World",
-                "/tr 你好世界",
-                "/翻译 How are you?",
-                "/fy 谢谢"
-            ],
             "ai": [
                 "/ai 你好",
                 "/ai 今天天气怎么样？",
@@ -141,7 +135,6 @@ class HelpCommand(BaseCommand):
 
 🎯 **主要功能:**
 • **天赋查询** - 查询魔兽世界职业专精天赋配置
-• **文本翻译** - 中英文互译功能  
 • **AI聊天** - 与AI助手进行智能对话
 • **帮助系统** - 提供详细的命令使用帮助
 

@@ -26,11 +26,9 @@ class ConfigManager:
             "verify_token": "",
             "encrypt_key": "",
             "bot_id": DEFAULT_BOT_ID,
-            "translation_channels": DEFAULT_TRANSLATION_CHANNELS,
             "admin_channels": DEFAULT_ADMIN_CHANNELS,
             "webhook_port": DEFAULT_WEBHOOK_PORT,
             "using_ws": DEFAULT_USING_WS,
-            "enable_translation": DEFAULT_ENABLE_TRANSLATION,
             "enable_talent_query": DEFAULT_ENABLE_TALENT_QUERY,
             "enable_ai_chat": DEFAULT_ENABLE_AI_CHAT,
             "enable_random_reply": DEFAULT_ENABLE_RANDOM_REPLY

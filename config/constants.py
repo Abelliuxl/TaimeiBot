@@ -11,14 +11,12 @@ DEFAULT_WEBHOOK_PORT: int = 50000
 DEFAULT_USING_WS: bool = True
 
 # 频道配置
-DEFAULT_TRANSLATION_CHANNELS: List[str] = ["9446829885813673", "4113108449843636"]
 DEFAULT_ADMIN_CHANNELS: List[str] = []
 
 # API配置
-DEFAULT_LLM_API_URL: str = "https://api.openai.com/v1/chat/completions"
+DEFAULT_LLM_API_URL: str = "https://api.deepseek.com/chat/completions"
 
 # 功能开关配置
-DEFAULT_ENABLE_TRANSLATION: bool = True
 DEFAULT_ENABLE_TALENT_QUERY: bool = True
 DEFAULT_ENABLE_AI_CHAT: bool = True
 DEFAULT_ENABLE_RANDOM_REPLY: bool = True
@@ -31,7 +29,6 @@ DEFAULT_RATE_LIMIT_MESSAGE: str = "请求过于频繁，请稍后再试"
 # 缓存配置
 DEFAULT_CACHE_TTL: int = 3600  # 1小时
 DEFAULT_RAIDER_CACHE_TTL: int = 1800  # 30分钟
-DEFAULT_TRANSLATION_CACHE_TTL: int = 86400  # 24小时
 
 # 重试配置
 DEFAULT_MAX_RETRIES: int = 3
@@ -48,15 +45,13 @@ DEFAULT_LOG_FILE: str = "logs/taimeibot.log"
 
 # 命令配置
 COMMAND_PREFIX: str = "/"
-COMMAND_TALENT: str = "tf"  # 根据用户实际使用情况修改
-COMMAND_TRANSLATE: str = "tr"
+COMMAND_TALENT: str = "tf"
 COMMAND_AI: str = "ai"
 COMMAND_HELP: str = "help"
 
 # 正则表达式模式
 RAIDER_IO_URL_PATTERN: str = r"https?://(www\.)?raider\.io"
 TALENT_QUERY_PATTERN: str = r"/tf\s+([^/]+)(?:/([^/]+))?(?:/([^/]+))?"
-TRANSLATION_PATTERN: str = r"/tr\s+([^/]+)(?:/([^/]+))?"
 AI_CHAT_PATTERN: str = r"/ai\s+(.+)"
 
 # 支持的游戏区域
@@ -87,27 +82,22 @@ DEFAULT_TALENT_CONFIG: Dict[str, Any] = {
     "max_level": 70
 }
 
-# 翻译配置
-TRANSLATION_CONFIG: Dict[str, Any] = {
-    "max_text_length": 5000,
-    "supported_languages": ["en", "zh", "ja", "ko"],
-    "default_source_lang": "auto",
-    "default_target_lang": "zh"
-}
-
 # AI聊天配置
 AI_CHAT_CONFIG: Dict[str, Any] = {
     "max_context_length": 4000,
     "max_response_length": 1000,
-    "temperature": 0.8,  # 基础温度
-    "temperature_range": [0.6, 1.0],  # 温度范围，用于随机化（最大值为1.0）
-    "system_prompt": "你是一个友好的AI助手，请简洁地回答用户的问题。"
+    "temperature": 0.8,
+    "temperature_range": [0.6, 1.0],
+    "system_prompt": "你是一个友好的AI助手，请简洁地回答用户的问题。",
+    "thinking": {
+        "type": "enabled",
+        "reasoning_effort": "max"
+    }
 }
 
 # 帮助信息
 HELP_MESSAGES: Dict[str, str] = {
     "talent": "查询天赋：/tf [职业专精简称]\n示例：/tf ms 或 /tf 恶魔学识",
-    "translate": "翻译文本：/tr [文本]\n示例：/tr Hello World 或 /tr 你好世界",
     "ai": "AI聊天：/ai [问题]\n示例：/ai 今天天气怎么样？",
     "help": "显示帮助信息：/help"
 }

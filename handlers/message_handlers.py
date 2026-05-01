@@ -8,18 +8,19 @@ from utils.base_errors import TaimeiBotError
 from utils.error_handler import APIError, NetworkError, ValidationError, RateLimitError, log_error
 from services import message_service
 from services.llm_service import make_request
+from services.agent_service import AgentService
 from handlers.commands import (
     BaseCommand, CommandRegistry, TalentCommand, 
     HelpCommand  # AIChatCommand and TranslationCommand removed
 )
 from services.data import ConfigRepository
 from utils.input_validator import (
-    validate_command, validate_talent_query, validate_translation, 
+    validate_command, validate_talent_query, 
     validate_ai_chat, validate_user_input
 )
 from utils.rate_limiter import (
     check_command_rate_limit, check_talent_rate_limit, 
-    check_translation_rate_limit, check_ai_chat_rate_limit
+    check_ai_chat_rate_limit
 )
 import os
 
@@ -92,11 +93,6 @@ class MessageHandler:
                 await self._handle_command_message(msg, bot)
                 return
             
-            # 检查是否在翻译频道
-            if await self._is_translation_channel(msg):
-                await self._handle_translation_message(msg, bot)
-                return
-            
             # 处理普通消息（随机回复）
             await self._handle_random_reply(msg, bot)
             
@@ -129,11 +125,11 @@ class MessageHandler:
                     await help_cmd.send_welcome_message(msg)
                 return
             
-            # 如果@机器人并带有其他内容，当作AI聊天处理
+            # 如果@机器人并带有其他内容，使用 Agent 处理
             new_content = content.replace(f"(met){bot_id}(met)", "").strip()
             if new_content:
                 logger.info(f"收到@提问: {new_content}")
-                await self._handle_ai_chat(msg, new_content, bot)
+                await self._handle_agent_chat(msg, new_content, bot)
                 
         except Exception as e:
             log_error(logger, e, {'function': '_handle_mention_message'})
@@ -215,68 +211,6 @@ class MessageHandler:
             log_error(logger, e, {'function': '_handle_special_command', 'command': command_name})
             await self._send_error_reply(msg, "抱歉，处理特殊命令时出现了错误。")
     
-    async def _is_translation_channel(self, msg: Message) -> bool:
-        """检查是否在翻译频道"""
-        channel_config = self.config_repo.get_channel_config()
-        translation_channels = channel_config.get('translation_channels', [])
-        return str(msg.ctx.channel.id) in translation_channels
-    
-    async def _handle_translation_message(self, msg: Message, bot: Bot):
-        """处理翻译消息"""
-        try:
-            # 移除@标记
-            content_mention = re.sub(r'\(met\).*?\(met\)', '', msg.content).strip()
-            logger.info(f"收到翻译请求: {content_mention}")
-            
-            if not content_mention:
-                return
-            
-            # 翻译验证 (validate_translation expects a list of args, so we pass it as a list)
-            is_valid, error_msg = await validate_translation([content_mention])
-            if not is_valid:
-                logger.warning(f"翻译验证失败: {error_msg}")
-                await self._send_validation_error_reply(msg, error_msg)
-                return
-            
-            # 翻译限流检查
-            rate_info = await check_translation_rate_limit(str(msg.author_id))
-            if rate_info.is_limited:
-                logger.warning(f"用户 {msg.author_id} 翻译触发限流")
-                await self._send_rate_limit_error_reply(msg, rate_info.retry_after)
-                return
-
-            # 检查功能开关 (assuming config is loaded in self.config_repo)
-            feature_config = self.config_repo.get_feature_config()
-            if not feature_config.get('enable_translation', True):
-                await self._send_error_reply(msg, "翻译功能当前已禁用")
-                return
-
-            logger.info(f"用户 {msg.author_id} 请求翻译: {content_mention}")
-            
-            # 调用翻译服务
-            # Note: make_request is for general LLM, translate_request is specific for translation.
-            # We need to import translate_request from services.llm_service
-            from services.llm_service import translate_request
-            
-            result = await translate_request(content_mention, config_repo=self.config_repo)
-            
-            if result and 'choices' in result and result['choices']:
-                translated_text = result['choices'][0]['message']['content'].strip()
-                # 发送翻译结果
-                await msg.reply(f"📖 翻译结果:\n{translated_text}")
-            else:
-                await self._send_error_reply(msg, "翻译服务返回结果异常")
-                
-        except ValidationError as e: # Should be caught by validate_translation, but as a safeguard
-            logger.warning(f"翻译验证错误: {str(e)}")
-            await self._send_validation_error_reply(msg, str(e))
-        except RateLimitError as e: # Should be caught by check_translation_rate_limit, but as a safeguard
-            logger.warning(f"翻译限流错误: {str(e)}")
-            await self._send_rate_limit_error_reply(msg)
-        except Exception as e:
-            log_error(logger, e, {'function': '_handle_translation_message'})
-            await self._send_error_reply(msg, "抱歉，翻译时出现了错误。")
-    
     async def _handle_ai_chat(self, msg: Message, content: str, bot: Bot):
         """处理AI聊天"""
         try:
@@ -301,13 +235,11 @@ class MessageHandler:
                 return
 
             logger.info(f"用户 {msg.author_id} AI聊天: {content}")
-            
-            # 调用AI聊天服务
+
             result = await make_request(content, config_repo=self.config_repo)
-            
+
             if result and 'choices' in result and result['choices']:
                 ai_reply = result['choices'][0]['message']['content'].strip()
-                # 发送AI回复
                 await msg.reply(f"🤖 AI助手:\n{ai_reply}")
             else:
                 await self._send_error_reply(msg, "AI服务返回结果异常")
@@ -322,6 +254,40 @@ class MessageHandler:
             log_error(logger, e, {'function': '_handle_ai_chat'})
             await self._send_error_reply(msg, "抱歉，AI聊天时出现了错误。")
     
+    async def _handle_agent_chat(self, msg: Message, content: str, bot: Bot):
+        """使用 Agent 处理 @消息"""
+        try:
+            is_valid, error_msg = await validate_ai_chat(content)
+            if not is_valid:
+                logger.warning(f"Agent验证失败: {error_msg}")
+                await self._send_validation_error_reply(msg, error_msg)
+                return
+
+            rate_info = await check_ai_chat_rate_limit(str(msg.author_id))
+            if rate_info.is_limited:
+                logger.warning(f"用户 {msg.author_id} 触发限流")
+                await self._send_rate_limit_error_reply(msg, rate_info.retry_after)
+                return
+
+            feature_config = self.config_repo.get_feature_config()
+            if not feature_config.get('enable_ai_chat', True):
+                await self._send_error_reply(msg, "AI聊天功能当前已禁用")
+                return
+
+            logger.info(f"用户 {msg.author_id} Agent请求: {content}")
+
+            from services.container import get_container
+            container = get_container()
+            agent = AgentService(container.get('llm_service'))
+
+            reply = await agent.run(content)
+
+            await msg.reply(f"🤖 太美:\n{reply}")
+
+        except Exception as e:
+            log_error(logger, e, {'function': '_handle_agent_chat'})
+            await self._send_error_reply(msg, "抱歉，处理请求时出现了错误。")
+
     async def _handle_random_reply(self, msg: Message, bot: Bot):
         """处理随机回复"""
         try:

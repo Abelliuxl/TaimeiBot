@@ -1,11 +1,10 @@
 import aiohttp
 import json
 import os
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, List
 from utils.logging_utils import get_logger
 from utils.error_handler import APIError, NetworkError, ConfigError, log_error
 from utils.retry_decorator import retry, get_default_retry_config
-from utils.cache_decorator import async_cache, translation_cache
 from config.constants import AI_CHAT_CONFIG
 from services.data.config_repository import ConfigRepository
 
@@ -13,28 +12,19 @@ logger = get_logger(__name__)
 
 class LLMService:
     """大语言模型服务类"""
-    
+
     def __init__(self, config_manager):
-        """
-        初始化LLM服务
-        
-        Args:
-            config_manager: 配置管理器实例
-        """
         self.config_manager = config_manager
-        
-        # 从配置管理器获取配置
         bot_config = config_manager.get_bot_config()
         self.api_url = bot_config.get('llm_api_url')
         self.api_key = bot_config.get('llm_api_key')
-        self.default_model = bot_config.get('llm_model', 'deepseek-chat')  # 从配置读取模型名称
-        
+        self.default_model = bot_config.get('llm_model', 'deepseek-v4-flash')
+        self.default_thinking = bot_config.get('thinking', AI_CHAT_CONFIG.get('thinking', {"type": "enabled", "reasoning_effort": "max"}))
+        self.default_max_tokens = bot_config.get('max_tokens', 65536)
+
         if not self.api_url or not self.api_key:
             raise ConfigError("LLM服务配置不完整，缺少API URL或API密钥")
-        
-        # 加载AI聊天配置
-        self.ai_config = AI_CHAT_CONFIG.copy()
-        
+
         logger.info("LLM服务初始化完成")
 
     @retry(**get_default_retry_config().__dict__)
@@ -44,31 +34,44 @@ class LLMService:
             "model": kwargs.get('model', self.default_model),
             "messages": messages,
         }
-        
-        # 添加可选参数
+
         if 'temperature' in kwargs:
             data['temperature'] = kwargs['temperature']
         if 'max_tokens' in kwargs:
             data['max_tokens'] = kwargs['max_tokens']
-        
+        else:
+            data['max_tokens'] = self.default_max_tokens
+
+        thinking = kwargs.get('thinking')
+        if thinking is not False:
+            if thinking is None or thinking is True:
+                data['thinking'] = {"type": "enabled"}
+                if isinstance(self.default_thinking, dict) and self.default_thinking.get('reasoning_effort'):
+                    data['thinking']['reasoning_effort'] = self.default_thinking['reasoning_effort']
+            elif isinstance(thinking, dict):
+                data['thinking'] = thinking
+            if data.get('thinking', {}).get('reasoning_effort') == 'max':
+                data['max_tokens'] = max(data.get('max_tokens', 65536), 128000)
+
+        if 'tools' in kwargs and kwargs['tools']:
+            data['tools'] = kwargs['tools']
+        if 'tool_choice' in kwargs:
+            data['tool_choice'] = kwargs['tool_choice']
+
         headers = {
             'Authorization': f'Bearer {self.api_key}',
             'Content-Type': 'application/json'
         }
-        
+
         try:
             async with aiohttp.ClientSession() as session:
                 async with session.post(self.api_url, headers=headers, json=data) as response:
                     if response.status == 200:
                         result = await response.json()
-                        
-                        # 验证响应格式
                         if 'choices' not in result or not result['choices']:
                             raise APIError("API响应格式错误：缺少choices字段")
-                        
                         if 'message' not in result['choices'][0]:
                             raise APIError("API响应格式错误：缺少message字段")
-                        
                         return result
                     elif response.status == 401:
                         raise APIError("API认证失败", status_code=response.status)
@@ -79,25 +82,25 @@ class LLMService:
                     else:
                         error_text = await response.text()
                         raise APIError(f"API请求失败: {error_text}", status_code=response.status)
-                        
+
         except aiohttp.ClientError as e:
             raise NetworkError(f"网络连接失败: {str(e)}")
         except json.JSONDecodeError as e:
             raise APIError(f"JSON解析失败: {str(e)}")
 
+    async def chat(self, messages: list, **kwargs) -> Dict[str, Any]:
+        """通用聊天接口"""
+        try:
+            result = await self._make_api_request(messages, **kwargs)
+            return result
+        except (APIError, NetworkError) as e:
+            log_error(logger, e, {'messages': str(messages)[:200]})
+            raise
+        except Exception as e:
+            log_error(logger, e, {'messages': str(messages)[:200]})
+            raise APIError(f"LLM服务调用失败: {str(e)}")
+
     async def make_request(self, content_q: str, user_id: str = None, **kwargs) -> Dict[str, Any]:
-        """
-        调用大语言模型API
-        
-        Args:
-            content_q: 用户输入内容
-            user_id: 用户ID，用于区分不同用户的缓存
-            **kwargs: 其他可选参数
-            
-        Returns:
-            API响应结果
-        """
-        # 动态生成系统提示词，增加随机性
         import random
         system_prompts = [
             "一个暴躁、尖酸刻薄的资深魔兽世界玩家，做助手汇报工作完成任务很专业，回答不要有括号",
@@ -106,18 +109,13 @@ class LLMService:
             "一个毒舌但专业的魔兽世界资深玩家，经常吐槽但很靠谱，回答不要有括号",
         ]
         system_prompt = random.choice(system_prompts)
-        
-        # 固定温度为1.0，避免超过某些LLM提供商的限制
-        kwargs['temperature'] = kwargs.get('temperature', 1.0)
-        
+        kwargs.setdefault('temperature', 1.0)
+
         messages = [
-            {
-                "role": "system", 
-                "content": system_prompt
-            },
+            {"role": "system", "content": system_prompt},
             {"role": "user", "content": content_q},
         ]
-        
+
         try:
             logger.info(f"发送LLM请求: {content_q[:100]}...")
             result = await self._make_api_request(messages, **kwargs)
@@ -131,44 +129,9 @@ class LLMService:
             log_error(logger, e, {'content': content_q[:200]})
             raise APIError(f"LLM服务调用失败: {str(e)}")
 
-    @translation_cache(ttl=86400, key_prefix="translation")
-    async def translate_request(self, content_q: str, **kwargs) -> Dict[str, Any]:
-        """
-        翻译功能的API调用
-        
-        Args:
-            content_q: 需要翻译的内容
-            **kwargs: 其他可选参数
-            
-        Returns:
-            API响应结果
-        """
-        messages = [
-            {
-                "role": "system",
-                "content": "Whenever I send you a message, you need to translate the sentence for me. If the sentence is in Chinese, translate it into English; if it's in English, translate it into Chinese. if it is not English or Chinese, translate it into English and Chinese. The translation must be accurate and natural, without any other extra irrelevant content."
-            },
-            {"role": "user", "content": content_q},
-        ]
-        
-        try:
-            logger.info(f"发送翻译请求: {content_q[:100]}...")
-            result = await self._make_api_request(messages, **kwargs)
-            reply = result['choices'][0]['message']['content']
-            logger.info(f"翻译响应: {reply[:100]}...")
-            return result
-        except (APIError, NetworkError) as e:
-            log_error(logger, e, {'content': content_q[:200]})
-            raise
-        except Exception as e:
-            log_error(logger, e, {'content': content_q[:200]})
-            raise APIError(f"翻译服务调用失败: {str(e)}")
-
-# 为了保持向后兼容，保留原有的函数接口
 _llm_service_instance: Optional[LLMService] = None
 
 def get_llm_service(config: Dict[str, Any] = None, config_repo: Optional[ConfigRepository] = None) -> LLMService:
-    """获取LLM服务实例（向后兼容函数）"""
     global _llm_service_instance
     if _llm_service_instance is None:
         try:
@@ -176,7 +139,6 @@ def get_llm_service(config: Dict[str, Any] = None, config_repo: Optional[ConfigR
             container = get_container()
             _llm_service_instance = container.get('llm_service')
         except Exception:
-            # 如果依赖注入容器不可用，使用传统方式
             if _llm_service_instance is None:
                 from config.config import get_config_manager
                 config_manager = get_config_manager()
@@ -184,11 +146,5 @@ def get_llm_service(config: Dict[str, Any] = None, config_repo: Optional[ConfigR
     return _llm_service_instance
 
 async def make_request(content_q: str, config: Dict[str, Any] = None, config_repo: Optional[ConfigRepository] = None) -> Dict[str, Any]:
-    """调用大语言模型API（向后兼容函数）"""
     service = get_llm_service(config, config_repo)
     return await service.make_request(content_q)
-
-async def translate_request(content_q: str, config: Dict[str, Any] = None, config_repo: Optional[ConfigRepository] = None) -> Dict[str, Any]:
-    """翻译功能的API调用（向后兼容函数）"""
-    service = get_llm_service(config, config_repo)
-    return await service.translate_request(content_q)
