@@ -240,3 +240,6 @@ yarn-error.log*
 
 # IDE / Editor specific
 .claude/
+
+# Runtime generated audio files
+audio/
