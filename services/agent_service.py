@@ -5,7 +5,7 @@ from services.memory import MemoryStore
 from services.tools import (
     BaseTool, BrowseWebpageTool, FetchURLTool, FileReaderTool,
     ReadMemoryTool, UpdateMemoryTool, TavilySearchTool, BraveSearchTool,
-    ListSkillsTool, LoadSkillTool,
+    ListSkillsTool, LoadSkillTool, WriteSkillTool, DeleteSkillTool,
 )
 from utils.logging_utils import get_logger
 from utils.error_handler import log_error
@@ -31,11 +31,15 @@ AGENT_SYSTEM_PROMPT = """你是一个智能 AI 助手，名叫"太美"。你可�
 - **update_memory**: 写入/更新长期记忆（重要信息请主动记住）
 - **list_skills**: 列出所有可用技能
 - **load_skill**: 加载技能的工作流指令
+- **write_skill**: 创建或更新一个技能（YAML格式）
+- **delete_skill**: 删除一个技能
 
 ## 技能使用
 - 接到任务时先 list_skills 看看有没有合适的技能
 - 用 load_skill 加载对应技能，按技能步骤执行
 - 技能提供标准化的操作流程，能帮你更高效地完成任务
+- 发现缺少技能时，用 write_skill 创建新技能
+- 技能不再适用时，用 delete_skill 删除
 
 ## 记忆使用策略
 - 每次对话开始时先读取记忆
@@ -57,7 +61,7 @@ class AgentService:
             BrowseWebpageTool(), FetchURLTool(), FileReaderTool(),
             ReadMemoryTool(), UpdateMemoryTool(),
             TavilySearchTool(), BraveSearchTool(),
-            ListSkillsTool(), LoadSkillTool(),
+            ListSkillsTool(), LoadSkillTool(), WriteSkillTool(), DeleteSkillTool(),
         ]:
             self.tools[tool.name] = tool
 

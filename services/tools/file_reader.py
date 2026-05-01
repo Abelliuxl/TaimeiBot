@@ -5,7 +5,9 @@ from utils.logging_utils import get_logger
 
 logger = get_logger(__name__)
 
-ALLOWED_PATHS: List[str] = []
+ALLOWED_PATHS: List[str] = [
+    "/home/liuxl/TaimeiBot/skills/",
+]
 
 ALLOWED_FILE_PATTERNS: List[str] = [
     ".json",
